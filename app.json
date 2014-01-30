@@ -1,0 +1,14 @@
+{
+    "version": "0.0.1",
+    "name": "OverrideCodes",
+    "displayName": "Override Code Recognizer",
+    "instanceId": "override1",
+    "capabilities": {
+    	"override_codes": "0.0.1"
+    },
+    "API": 0,
+    "description": "Submits a grammar to the speech recognizer to recognize override codes.",
+    "dependencies": {
+        "stt": "0.0.1"
+    }
+}
