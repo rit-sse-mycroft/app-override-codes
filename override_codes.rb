@@ -1,45 +1,35 @@
 require 'mycroft'
-require './nato'
+require_relative 'nato'
 
 class OverrideCodes < Mycroft::Client
-
-  attr_accessor :verified
 
   def initialize(host, port)
     @key = ''
     @cert = ''
     @manifest = './app.json'
     @verified = false
-    @grammar = OverrideCodeGrammar::xml()
+    silence_stream(STDOUT) do
+      @grammar = OverrideCodeGrammar::xml()
+    end
+    @sentgrammar = Hash.new(false)
     super
   end
 
-  def connect
-  end
-  
-  def on_event_loop
-
+  on 'APP_MANIFEST_OK' do |data|
+    up
   end
 
-  def on_data(parsed)
-    if parsed[:type] == 'APP_DEPENDENCY'
-      parsed[:data].each do |type, deps|
-        targets = []
-        deps.each do |id, status|
-          if status != 'down'
-            targets << id
-          end
-        end
-        query(type, 'load_grammar', {grammar: {name: "override_codes", xml: @grammar}}, 30, targets)
+  on 'APP_DEPENDENCY' do |data|
+    update_dependencies(data)
+    targets = []
+    @dependencies['stt'].each do |k,v|
+      if v == 'up' and not @sent_grammar[k]
+        targets << k
+      elsif v == 'down' and sent_grammar[k]
+        @sent_grammar = false
       end
-    elsif parsed[:type] == 'APP_MANIFEST_OK'
-      puts "Going up!"
-      up
     end
-  end
-
-  def on_end
-    
+    query('stt', 'load_grammar', {grammar: {name: "override_codes", xml: @grammar}}, 30, targets)
   end
 end
 
